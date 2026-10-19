@@ -22,7 +22,7 @@ let fails = 0; const ok = (c, m) => { log((c ? 'PASS ' : 'FAIL ') + m); if (!c) 
   ok(/R\. H\. Charles/.test(await p.textContent('.credit')), 'Enoch credit shown');
   // picker tabs
   await p.click('#btnRef'); for (const tab of ['prot', 'cath', 'eth', 'gos', 'all']) { await p.click(`#pickTabs [data-t="${tab}"]`); }
-  await p.click('#pickTabs [data-t="eth"]'); const na = await p.$$eval('#pickBody .na', e => e.length); ok(na >= 9, 'Ethiopian tab greys out unavailable books: ' + na);
+  await p.click('#pickTabs [data-t="eth"]'); const na = await p.$$eval('#pickBody .na', e => e.length); ok(na >= 5, 'Ethiopian tab greys out unavailable books: ' + na);
   await p.click('#pickTabs [data-t="gos"]'); await p.click('#pickBody [data-b="GTH"]'); await p.click('#pickBody [data-c="77"]'); await p.waitForSelector('#pickBody [data-v]'); await p.click('#pickBody [data-v="1"]');
   await p.waitForFunction(() => document.querySelector('h1')?.textContent === 'Gospel of Thomas'); t = await p.textContent('#reader'); ok(/Split a log/.test(t), 'Picker tab→book→chapter→verse: Thomas 77');
   await p.click('#btnRef'); ok(await p.$eval('#pickTabs .on', e => e.dataset.t) === 'gos', 'last tab remembered');

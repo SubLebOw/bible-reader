@@ -1,6 +1,6 @@
 import json, os, re, shutil, sys
 sys.path.insert(0,'/workspace/bible-reader/build')
-import sources as S, parse_st, parse_ccel as PC
+import sources as S, parse_st, parse_ccel as PC, ocr_clean as OC, parse_horner, parse_harden, josippon, supporting
 OUT='/workspace/bible-reader/site/data'
 shutil.rmtree(OUT,ignore_errors=True); os.makedirs(OUT)
 D=S.D
@@ -10,8 +10,10 @@ P66=[('GEN','Genesis','gen ge gn'),('EXO','Exodus','exo ex exod'),('LEV','Leviti
 DEUT=[('TOB','Tobit','tob tb'),('JDT','Judith','jdt jud judith'),('ESG','Esther (Greek, with additions)','esg gkesth addesth'),('WIS','Wisdom of Solomon','wis ws wisdom'),('SIR','Sirach (Ecclesiasticus)','sir ecclus sirach'),('BAR','Baruch (ch. 6 = Letter of Jeremiah)','bar ba'),('S3Y','Song of the Three Young Men','s3y sgthree azariah'),('SUS','Susanna','sus'),('BEL','Bel and the Dragon','bel'),('DAG','Daniel (Greek, with additions)','dag gkdan'),('1MA','1 Maccabees','1macc 1ma 1 macc'),('2MA','2 Maccabees','2macc 2ma 2 macc'),('3MA','3 Maccabees','3macc 3ma'),('4MA','4 Maccabees','4macc 4ma'),('1ES','1 Esdras (Ethiopian: Ezra II)','1esd 1es 3ezra ezra2'),('2ES','2 Esdras (chs 3–14 = 4 Ezra / Ezra Sutuel)','2esd 2es 4ezra sutuel'),('MAN','Prayer of Manasseh','man prman manasseh'),('PS2','Psalm 151','ps151 ps2')]
 ETH=[('ENO','1 Enoch','enoch eno hen 1en henok'),('JUB','Jubilees','jub jubilees kufale'),('MQ1','1 Meqabyan','1meq mq1 1meqabyan'),('MQ2','2 Meqabyan','2meq mq2 2meqabyan'),('MQ3','3 Meqabyan','3meq mq3 3meqabyan'),('4BA','4 Baruch (Paralipomena of Jeremiah)','4bar 4ba parjer paralipomena')]
 GOS=[('GTH','Gospel of Thomas','gth gthom thomas gospel of thomas'),('GTHG','Gospel of Thomas – Greek fragments (P.Oxy. 1, 654, 655)','gthgr poxy1 poxy654 poxy655'),('IGT','Infancy Gospel of Thomas','igt inf thomas infancy thomas'),('IGTB','Infancy Gospel of Thomas (Second Greek Form)','igtb'),('IGTL','Infancy Gospel of Thomas (Latin Form)','igtl'),('PJAS','Proto-Gospel of James (Infancy Gospel of James)','pjas protev protevangelium infancy james'),('PSMT','Gospel of Pseudo-Matthew','psmt pseudo-matthew psmatt'),('HJC','History of Joseph the Carpenter','hjc joseph carpenter'),('ARIN','Arabic Infancy Gospel','arin arabic infancy'),('JCG','Jewish-Christian Gospels (Hebrews, Ebionites, Nazareans)','jcg hebrews ebionites nazareans gheb'),('GEGY','Gospel according to the Egyptians','gegy egyptians'),('EGER','Papyrus Egerton 2 (Unknown Gospel)','eger egerton'),('POX840','Papyrus Oxyrhynchus 840','pox840 poxy840'),('FAYUM','Fayûm Fragment (P.Vindob. G 2325)','fayum'),('POX5575','Sayings of Jesus (P.Oxy. 5575)','pox5575'),('AGRA','Agrapha','agra agrapha'),('GPET','Gospel of Peter','gpet gospel of peter'),('GJUD','Gospel of Judas','gjud judas'),('ABGAR','Jesus’ Correspondence with Abgar','abgar'),('NICA','Gospel of Nicodemus (Acts of Pilate) A','nica nicodemus acts of pilate'),('NICB','Gospel of Nicodemus (Acts of Pilate) B','nicb'),('NICL','Gospel of Nicodemus (Acts of Pilate) – Latin Form','nicl'),('DESC','Descent into Hades (Nicodemus Part II, Greek)','desc descent hades'),('DESCL','Descent into Hell (Nicodemus Part II, Latin)','descl'),('ANAPH','Report of Pontius Pilate (Anaphora Pilati)','anaph anaphora report of pilate'),('PARAD','Handing Over of Pilate (Paradosis Pilati)','parad paradosis'),('LPIL','Letter of Pontius Pilate (to Tiberius)','lpil letter of pilate'),('LHP','Letters of Herod to Pilate and Pilate to Herod','lhp herod'),('LTIB','Letter of Tiberius to Pilate','ltib tiberius'),('VIND','Vengeance of the Savior (Vindicta Salvatoris)','vind vengeance avenging'),('MORS','Death of Pilate (Mors Pilati)','mors death of pilate'),('JOSAR','Narrative of Joseph of Arimathea','josar joseph of arimathea'),('GMAR','Gospel of Mary','gmar gmary mary'),('GPHIL','Gospel of Philip','gphil philip'),('GTRU','Gospel of Truth','gtru truth'),('SMRK','Secret Gospel of Mark','smrk secret mark')]
+ETH2=[('SIN2','Sinodos: Te’ezaz (Statutes of the Apostles)','sin2 teezaz sinodos statutes horner'),('DIDA','Didascalia (Ethiopic Didesqelya)','dida didascalia didesqelya harden'),('JOSI','Josippon (Hebrew Sefer Yosippon, Morwyng 1558)','josi josippon yosippon morwyng'),('COV2R','Book of the Covenant 2 — related: Epistle of the Apostles','cov2 covenant epistula apostolorum epap'),('CLEMR','Ethiopic Clement, Book 2 — Apocalypse of Peter (Ethiopic text)','clem clement apocpet qalementos')]
+SUP=[('TAC','Tacitus, Annals 15.44','tac tacitus annals'),('PLIN','Pliny the Younger, Letters 10.96–97','plin pliny trajan'),('JOSA','Josephus, Antiquities (Jesus, John, James)','josa josephus testimonium antiquities'),('SUET','Suetonius, Claudius 25 & Nero 16','suet suetonius chrestus'),('MARA','Mara bar Serapion, Letter to his Son','mara serapion'),('LUC','Lucian, The Death of Peregrine','luc lucian peregrinus peregrine'),('THAL','Thallus (via Julius Africanus)','thal thallus africanus')]
 META={}
-for lst,grp in [(P66,'bible'),(DEUT,'deut'),(ETH,'eth'),(GOS,'gos')]:
+for lst,grp in [(P66,'bible'),(DEUT,'deut'),(ETH,'eth'),(ETH2,'eth'),(GOS,'gos'),(SUP,'sup')]:
     for c,n,a in lst: META[c]={'id':c,'name':n,'abbr':a.split(),'grp':grp}
 # ---------- translations ----------
 TR={
@@ -24,6 +26,10 @@ TR={
  'mattison':{'name':'Mark M. Mattison et al. (Gospels.net)','short':'Mattison','license':'Public domain (dedicated by the translators)','src':'gospels.net'},
  'walker':{'name':'Alexander Walker, Ante-Nicene Fathers vol. 8 (1886)','short':'ANF','license':'Public domain','src':'CCEL anf08.txt'},
  'robinson':{'name':'J. Armitage Robinson, Ante-Nicene Fathers vol. 9 (1896)','short':'ANF9','license':'Public domain','src':'CCEL anf09.txt'},
+ 'horner':{'name':'G. Horner, The Statutes of the Apostles (London 1904) — OCR of the scan, cleaned','short':'Horner','license':'Public domain','src':'archive.org statutesapostle00unkngoog'},
+ 'harden':{'name':'J. M. Harden, The Ethiopic Didascalia (SPCK 1920) — OCR of the scan, cleaned','short':'Harden','license':'Public domain','src':'archive.org cu31924096083336'},
+ 'morwyng':{'name':'Peter Morwyng (1558), Hebrew Josippon — EEBO-TCP text','short':'Morwyng','license':'Text: CC0 (Text Creation Partnership); original public domain','src':'github.com/textcreationpartnership/A04666'},
+ 'pd':{'name':'Public-domain translations (translator credited per text)','short':'PD','license':'Public domain','src':'see credit on each text'},
  'james':{'name':'M. R. James, The Apocryphal New Testament (Oxford 1924)','short':'James','license':'Public domain (US)','src':'en.wikisource.org The Apocryphal New Testament (1924)'},
 }
 CREDIT={}  # (trans,book)-> credit line override
@@ -106,13 +112,46 @@ AP='james_Passion_Gospels_Other_Appendixes_to_the_Acts_of_Pilate'
 write('james','LHP',[{'n':'1','h':'The Letter of Pilate to Herod','v':jparas(AP,'THE LETTER OF PILATE TO HEROD','THE LETTER OF HEROD TO PILATE')},
                      {'n':'2','h':'The Letter of Herod to Pilate','v':[v for v in jparas(AP,'THE LETTER OF HEROD TO PILATE','LETTER OF TIBERIUS TO PILATE')][:5]}],JM+' James gives these letters partly in abridged form.')
 write('james','LTIB',[{'n':'1','v':jparas(AP,'LETTER OF TIBERIUS TO PILATE','THE DEATH OF PILATE')}],JM+' James gives this letter and the surrounding legend partly in summary.')
+# ---------- round 2: Ethiopian broader canon, supporting texts ----------
+OC.VOC=OC.build_vocab()
+write('horner','SIN2',parse_horner.horner(),'Translated from the Ethiopic by G. Horner, The Statutes of the Apostles or Canones Ecclesiastici (London: Williams & Norgate, 1904), “Translation of the Ethiopic Text” (the Te’ezaz / Statutes section of the Sinodos). Public domain. Scan: archive.org/details/statutesapostle00unkngoog. Cleaned from the OCR: running heads, margin line numbers, footnotes and apparatus removed; hyphenation joined; only certain OCR errors corrected; unreadable passages marked [illegible in scan]. Statute numbers follow the scan; Horner prints two statutes numbered 40, shown here as 40 and 40 (bis). Paragraphing is approximate.')
+write('harden','DIDA',parse_harden.harden(),'Translated from the Ethiopic by J. M. Harden, The Ethiopic Didascalia (London: SPCK, 1920). Public domain. Scan: archive.org/details/cu31924096083336. Cleaned from the OCR: running heads, footnote apparatus (variants of Platt’s MS “P”, references) and Harden’s bracketed parallels to the Syriac Didascalia / Apostolic Constitutions removed; footnote markers removed; hyphenation joined; only certain OCR errors corrected (e.g. c/e confusions like “thercin” → “therein”). Where the scan mixes text with apparatus the passage is marked [illegible in scan]. Paragraphing is approximate.')
+write('morwyng','JOSI',josippon.josippon(),'This is the HEBREW Josippon (Sefer Yosippon, attributed to “Joseph ben Gorion”), in the abridged English of Peter Morwyng, A compendious and most marveilous history of the latter tymes of the Iewes commune weale (London 1558). It is NOT a translation of the Ethiopic Zena Ayhud, which derives from the Arabic version of this work; contents and order differ. Text: EEBO-TCP A04666, released under CC0 by the Text Creation Partnership; long s normalised to s, marginal notes omitted, original spelling kept. “•” marks letters illegible in the original print.')
+def jsec(f,a,b):
+    x=open(f'{D}/ws/{f}.txt').read().split('\n')
+    s_=next(i for i,l in enumerate(x) if l.replace('\u200b','').strip().startswith(a)); e_=next(i for i,l in enumerate(x) if i>s_ and l.replace('\u200b','').strip().startswith(b))
+    return [re.sub(r'\s+',' ',l.replace('\u200b','')).strip() for l in x[s_:e_] if l.strip()]
+def numbered(lines):
+    chs=[]; cur=None
+    for l in lines:
+        for part in re.split(r'(?:(?<=^)|(?<=[.:;?!’”)\]] ))(?=\d{1,2} [A-Z(\[⟨])',l):
+            m=re.match(r'^(\d{1,2}) (.*)$',part)
+            if m and (cur is None or int(m.group(1))==(int(cur['n']) if cur['n'].isdigit() else 0)+1): cur={'n':m.group(1),'v':[]}; chs.append(cur); part=m.group(2)
+            if cur is None: cur={'n':'Intro','v':[]}; chs.append(cur)
+            if part.strip(): cur['v'].append(part.strip())
+    chs=[c for c in chs if c['v']]
+    for c in chs: c['v']=[[str(i+1),p] for i,p in enumerate(c['v'])]
+    return chs
+ep=numbered(jsec('james_Epistles_The_Epistle_of_the_Apostles','1 The book which Jesus Christ revealed','Footnotes'))
+write('james','COV2R',ep,JM+' — RELATED TEXT, not the Ethiopic Book of the Covenant itself: the second part of the Ethiopic “Book of the Covenant” (the “Testament in Galilee”) is a form of the Epistle of the Apostles (Epistula Apostolorum). James’s version follows the Coptic and Ethiopic (Schmidt and Guerrier); chapter numbers as in James. No public-domain English translation of the Ethiopic Book of the Covenant itself was found.')
+cl=jsec('james_Apocalypses_The_Apocalypse_of_Peter','The Second Coming of Christ and Resurrection','There is a great deal more of the Ethiopic text')
+write('james','CLEMR',[{'n':'1','h':'The Apocalypse of Peter — the Ethiopic text (from the Ethiopic Books of Clement)','v':[[str(i+1),p] for i,p in enumerate(cl)]}],JM+' — PARTIAL / RELATED: this is the Ethiopic version of the Apocalypse of Peter, which survives inside the Ethiopic Books of Clement (Qälémentos); James translates from Grébaut’s Ethiopic text (1910), with comparison to Duensing. James’s own bracketed notes are retained. The rest of the Ethiopic Clement has no public-domain English translation.')
+for code,b in supporting.books().items():
+    write('pd',code,b['c'],b['credit'])
+# backup of the Wikisource Meqabyan texts (CC BY-SA) into the repo
+os.makedirs('/workspace/bible-reader/site/sources',exist_ok=True)
+for n in (1,2,3):
+    d=json.load(open(f'{D}/ws/Translation_{n}_Meqabyan.json'))
+    wt=json.dumps(d,ensure_ascii=False)
+    open(f'/workspace/bible-reader/site/sources/Translation_{n}_Meqabyan.wikitext.json','w').write(wt)
+open('/workspace/bible-reader/site/sources/README.md','w').write('Backups of the Wikisource pages “Translation:1 Meqabyan”, “Translation:2 Meqabyan”, “Translation:3 Meqabyan” (raw API responses with wikitext), fetched 2026-10. Text by Wikisource contributors, licensed CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Source: https://en.wikisource.org/wiki/Translation:1_Meqabyan (etc.). 1 Meqabyan there has chapters 1–7 only and was nominated for deletion.\n')
 # ---------- catalog / tabs ----------
 def B(c): return {'id':c}
-def U(name,note,grp='eth'): return {'id':None,'name':name,'note':note}
+def U(name,note,uid=None): return {'id':None,'uid':uid or re.sub(r'[^A-Z0-9]','',name.upper())[:10],'name':name,'note':note}
 prot_ot=[c for c,_,_ in P66[:39]]; nt=[c for c,_,_ in P66[39:]]
 cath_ot=['GEN','EXO','LEV','NUM','DEU','JOS','JDG','RUT','1SA','2SA','1KI','2KI','1CH','2CH','EZR','NEH','TOB','JDT','EST','ESG','1MA','2MA','JOB','PSA','PRO','ECC','SNG','WIS','SIR','ISA','JER','LAM','BAR','EZK','DAN','DAG','S3Y','SUS','BEL','HOS','JOL','AMO','OBA','JON','MIC','NAM','HAB','ZEP','HAG','ZEC','MAL']
-ETHNOTE={'2CH':'Ethiopian 2 Chronicles includes the Prayer of Manasseh (see below)','PRO':'Ethiopian tradition splits this into Messale (Prov 1–24) and Tägsas (Prov 25–31)','PSA':'Ethiopian Psalter includes Psalm 151','EST':'Ethiopian Esther includes the Greek additions (see Esther (Greek))','DAN':'Ethiopian Daniel includes the Greek additions (see Daniel (Greek))','JER':'','BAR':'Baruch 1–5; chapter 6 is the Letter of Jeremiah','1ES':'Ethiopian “Ezra II” (3 Ezra)','2ES':'Ezra Sutuel = 2 Esdras chapters 3–14 (4 Ezra)','EZR':'Ezra & Nehemiah are counted as one or two books depending on the list'}
-eth_ot=['GEN','EXO','LEV','NUM','DEU','JOS','JDG','RUT','1SA','2SA','1KI','2KI','1CH','2CH','MAN','JUB','ENO','EZR','NEH','1ES','2ES','TOB','JDT','EST','ESG','MQ1','MQ2','MQ3','JOB','PSA','PS2','PRO','WIS','ECC','SNG','SIR','ISA','JER','BAR','LAM','4BA','EZK','DAN','DAG','HOS','AMO','MIC','JOL','OBA','JON','NAM','HAB','ZEP','HAG','ZEC','MAL']
+ETHNOTE={'2CH':'Ethiopian 2 Chronicles includes the Prayer of Manasseh (see below)','PRO':'Ethiopian tradition splits this into Messale (Prov 1–24) and Tägsas (Prov 25–31)','PSA':'Ethiopian Psalter includes Psalm 151','EST':'Ethiopian Esther includes the Greek additions (see Esther (Greek))','DAN':'Ethiopian Daniel includes the Greek additions (see Daniel (Greek))','JER':'','SUS':'Also included as Daniel (Greek) ch. 13','BEL':'Also included as Daniel (Greek) ch. 14','BAR':'Baruch 1–5; chapter 6 is the Letter of Jeremiah','1ES':'Ethiopian “Ezra II” (3 Ezra)','2ES':'Ezra Sutuel = 2 Esdras chapters 3–14 (4 Ezra)','EZR':'Ezra & Nehemiah are counted as one or two books depending on the list'}
+eth_ot=['GEN','EXO','LEV','NUM','DEU','JOS','JDG','RUT','1SA','2SA','1KI','2KI','1CH','2CH','MAN','JUB','ENO','EZR','NEH','1ES','2ES','TOB','JDT','EST','ESG','MQ1','MQ2','MQ3','JOB','PSA','PS2','PRO','WIS','ECC','SNG','SIR','ISA','JER','BAR','LAM','4BA','EZK','DAN','DAG','SUS','BEL','HOS','AMO','MIC','JOL','OBA','JON','NAM','HAB','ZEP','HAG','ZEC','MAL']
 tabs=[
  {'id':'prot','name':'Protestant','groups':[{'name':'Old Testament','items':[B(c) for c in prot_ot]},{'name':'New Testament','items':[B(c) for c in nt]}]},
  {'id':'cath','name':'Catholic','groups':[{'name':'Old Testament (Catholic order, 46 books + Greek additions)','items':[B(c) for c in cath_ot]},{'name':'New Testament','items':[B(c) for c in nt]}]},
@@ -120,15 +159,17 @@ tabs=[
    {'name':'Old Testament — narrower canon','items':[dict(B(c),note=ETHNOTE.get(c,'')) for c in eth_ot]},
    {'name':'New Testament — narrower canon (27)','items':[B(c) for c in nt]},
    {'name':'Broader canon','items':[
-     U('Josippon (Zena Ayhud)','Unavailable: no public-domain English translation of the Ethiopic Josippon exists.'),
-     U('Sinodos: Ser‘ata Seyon','Unavailable here. A public-domain English translation exists (G. Horner, The Statutes of the Apostles, 1904) but only as an OCR scan with interleaved apparatus — archive.org/details/statutesapostle00unkngoog'),
-     U('Sinodos: Te’ezaz','Unavailable here (see Horner 1904, archive.org/details/statutesapostle00unkngoog)'),
-     U('Sinodos: Gessew','Unavailable here (see Horner 1904, archive.org/details/statutesapostle00unkngoog)'),
-     U('Sinodos: Abtelis','Unavailable here (see Horner 1904, archive.org/details/statutesapostle00unkngoog)'),
-     U('Book of the Covenant 1 (Mäshafä Kidan)','Unavailable: no public-domain English translation of the Ethiopic text (French: Guerrier & Grébaut 1913).'),
-     U('Book of the Covenant 2','Unavailable: no public-domain English translation of the Ethiopic text.'),
-     U('Ethiopic Clement (Qälémentos)','Unavailable: only a French translation (Grébaut, 1911–) is public domain.'),
-     U('Didascalia (Didesqelya)','Unavailable here. Public-domain English translations exist (T. P. Platt 1834; J. M. Harden 1920) but only as OCR scans — archive.org/details/cu31924096083336'),
+     U('Josippon (Zena Ayhud), Ethiopic','Unavailable: no public-domain English translation of the Ethiopic Zena Ayhud exists. The related Hebrew Josippon is listed below (Morwyng 1558).','ZENA'),
+     B('JOSI'),
+     U('Sinodos: Ser‘ata Seyon','Unavailable: Horner (1904) translated only the Statutes (Te’ezaz) section; no public-domain English translation of this section was found.','SIN1'),
+     B('SIN2'),
+     U('Sinodos: Gessew','Unavailable: no public-domain English translation found (not in Horner 1904).','SIN3'),
+     U('Sinodos: Abtelis','Unavailable: no public-domain English translation found. (Horner 1904 gives the Arabic/Ethiopic “Statutes”; the Abtelis canons are not separately translated.)','SIN4'),
+     U('Book of the Covenant 1 (Mäshafä Kidan)','Unavailable: no public-domain English translation of the Ethiopic text (French: Guerrier & Grébaut 1913). The closely related Syriac Testament of Our Lord (Cooper & Maclean 1902) is public domain but not yet transcribed here.','COV1'),
+     B('COV2R'),
+     B('CLEMR'),
+     U('Ethiopic Clement — books other than the Apocalypse of Peter','Unavailable: only a French translation (Grébaut 1911–) is public domain.','CLEM'),
+     B('DIDA'),
    ]}]},
  {'id':'gos','name':'Other Gospels','groups':[
    {'name':'Infancy gospels','items':[B('IGT'),U('Infancy Gospel of Thomas C (alternative beginning)','Unavailable: no free English translation.'),B('IGTB'),B('IGTL'),B('PJAS'),B('PSMT'),U('Latin Infancy Gospels (Arundel form)','Unavailable: no free English translation.'),B('HJC'),B('ARIN')]},
@@ -138,15 +179,18 @@ tabs=[
    {'name':'Other early Christian gospels (not in Ehrman & Pleše)','items':[B('GPHIL'),B('GTRU'),B('SMRK')]},
  ]},
 ]
+tabs.append({'id':'sup','name':'Supporting Texts','groups':[
+   {'name':'Roman and Greek writers','items':[B('TAC'),B('PLIN'),B('SUET'),B('LUC'),B('THAL')]},
+   {'name':'Jewish and Syriac sources','items':[B('JOSA'),B('MARA'),U('Babylonian Talmud, Sanhedrin 43a','Unavailable: no public-domain English translation found (Rodkinson’s 1903 edition omits this passage; the Soncino translation, 1935, is not public domain).','TALM')]}]})
 allg=[{'name':'Old Testament','items':[B(c) for c in prot_ot]},{'name':'New Testament','items':[B(c) for c in nt]},
       {'name':'Deuterocanon / Apocrypha','items':[B(c) for c,_,_ in DEUT]},{'name':'Ethiopian books','items':[B(c) for c,_,_ in ETH]},
-      {'name':'Other early gospels','items':[B(c) for c,_,_ in GOS]}]
+      {'name':'Ethiopian broader canon','items':[B(c) for c,_,_ in ETH2]},{'name':'Other early gospels','items':[B(c) for c,_,_ in GOS]},{'name':'Supporting Texts','items':[B(c) for c,_,_ in SUP]}]
 tabs.append({'id':'all','name':'All','groups':allg})
 books={}
 for c,m in META.items():
     if c in avail: books[c]=dict(m,tr=avail[c])
     else: print('NO DATA',c)
 order=[c for c in META if c in books]
-cat={'translations':TR,'books':books,'order':order,'tabs':tabs,'pref':['lsb','bsb','web','kjv','mattison','walker','charles','wsfb','kraft','james','robinson']}
+cat={'translations':TR,'books':books,'order':order,'tabs':tabs,'pref':['lsb','bsb','web','kjv','mattison','walker','charles','wsfb','kraft','james','robinson','horner','harden','morwyng','pd']}
 json.dump(cat,open(f'{OUT}/catalog.json','w'),ensure_ascii=False,separators=(',',':'))
 print('books',len(books))
