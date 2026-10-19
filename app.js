@@ -65,11 +65,13 @@ function prog(bar,f,txt){if(!bar)return;bar.hidden=false;bar.firstElementChild.s
 const keyOf=(b,c,v)=>b+'.'+c+'.'+v;
 function chapLabels(book,tr){return cat.books[book].tr[tr]||[]}
 function refText(book,chLabel,v){const b=cat.books[book];const one=Object.values(b.tr)[0].length===1&&chLabel==='1';return b.name+(one?'':' '+chLabel)+(v?(one?' ':':')+v:'')}
+let renderGen=0;
 async function render(opts={}){
+  const gen=++renderGen;
   const b=cat.books[cur.book]; cur.tr=resolveTr(cur.book,prefs.tr||prefs.defTr);
   const labels=chapLabels(cur.book,cur.tr); if(cur.ch>=labels.length)cur.ch=labels.length-1; if(cur.ch<0)cur.ch=0;
   const chLabel=labels[cur.ch];
-  prefs.pos={book:cur.book,ch:chLabel}; savePrefs();
+  prefs.pos={book:cur.book,ch:chLabel}; savePrefs(); cur.key=cur.book+'/'+chLabel;
   history.replaceState(null,'','#/'+cur.book+'/'+encodeURIComponent(chLabel)+(opts.verse?'/'+opts.verse:''));
   $('#btnRef').textContent=refText(cur.book,chLabel); $('#pRef').firstChild.textContent=refText(cur.book,chLabel)+' '; $('#pTr').textContent=cat.translations[cur.tr].short; document.title=refText(cur.book,chLabel)+' · Bible Reader';
   fillTrSelect($('#selTr'),cur.book,cur.tr);
@@ -78,14 +80,43 @@ async function render(opts={}){
   $('#selTr2').hidden=!cur.compare;
   const R=$('#reader'); R.className=cols.length>1?'compare':'';
   const htmls=await Promise.all(cols.map(t=>colHtml(t,chLabel,cols.length>1)));
+  if(gen!==renderGen)return; // a newer navigation started while this chapter was loading
   let note='';
   const want=prefs.tr||prefs.defTr; if(want&&cur.tr!==want&&cur.tr!=='user'&&cat.translations[want]) note=`<div class="notice">${esc(b.name)} isn’t in the ${esc(cat.translations[want].short)}; showing ${esc(cat.translations[cur.tr].name)}.</div>`;
   if(cur.compare&&!tr2) note+='<div class="notice">Only one translation is available for this book, so there is nothing to compare.</div>';
   R.innerHTML=(cols.length>1?`<div style="grid-column:1/-1">${head(chLabel)}${note}</div>`:head(chLabel)+note)+htmls.join('')+`<div class="navfoot" style="grid-column:1/-1"><button id="fPrev">‹ Previous</button><button id="fNext">Next ›</button></div>`;
   $('#fPrev').onclick=()=>step(-1); $('#fNext').onclick=()=>step(1);
-  if(opts.verse){const el=R.querySelector(`.v[data-v="${CSS.escape(opts.verse)}"]`); if(el){el.scrollIntoView({block:'center'});el.classList.add('flash')}}
-  else if(!opts.keepScroll) window.scrollTo(0,0);
+  if(opts.restoreY!=null) settleScroll(()=>opts.restoreY);
+  else if(opts.verse){const el=R.querySelector(`.v[data-v="${CSS.escape(opts.verse)}"]`); if(el){el.classList.add('flash');settleScroll(()=>verseY(el))}else settleScroll(()=>0)}
+  else if(!opts.keepScroll) settleScroll(()=>0);
 }
+// ---------- scroll handling ----------
+// Height of whatever is pinned over the top of the reading view (desktop #bar or phone #pbar).
+function topBarH(){const bar=document.body.classList.contains('phone')?$('#pbar'):$('#bar');return bar?Math.max(0,bar.getBoundingClientRect().bottom):0}
+// Page offset that puts a verse a little below the top bar (a third of the way down the visible area), never under it.
+function verseY(el){const r=el.getBoundingClientRect();const bar=topBarH();const tab=document.body.classList.contains('phone')?($('#tabbar').getBoundingClientRect().height||0):0;
+  const room=innerHeight-bar-tab;const gap=Math.max(16,Math.min(room/3,room-r.height-16));return Math.max(0,Math.round(r.top+scrollY-bar-gap))}
+// Scroll to a target and keep it there while the page settles. Touch momentum from a swipe, the browser's own
+// scroll restoration, or a late layout change could otherwise leave the new chapter slightly scrolled down.
+// Stops as soon as the reader touches, wheels or presses a key.
+let settleGen=0;
+function settleScroll(target){
+  const g=++settleGen; const de=document.documentElement;
+  const apply=()=>{if(g!==settleGen)return;const y=target();if(Math.abs(scrollY-y)>1)window.scrollTo({top:y,left:0,behavior:'instant'})};
+  // cancel any in-flight momentum scroll (iOS/Android ignore scrollTo while it runs)
+  const touch=document.body.classList.contains('phone')||matchMedia('(pointer: coarse)').matches; const ov=de.style.overflow; if(touch)de.style.overflow='hidden'; apply(); requestAnimationFrame(()=>{if(touch)de.style.overflow=ov; apply(); requestAnimationFrame(apply)});
+  const stop=()=>{if(g===settleGen)settleGen++;off()};
+  const ev=['touchstart','wheel','keydown','mousedown'];const off=()=>ev.forEach(e=>removeEventListener(e,stop,true));
+  setTimeout(()=>ev.forEach(e=>addEventListener(e,stop,{capture:true,passive:true})),50);
+  [80,200,400,700].forEach(t=>setTimeout(apply,t)); setTimeout(()=>{if(g===settleGen)settleGen++;off()},800);
+  if(document.fonts&&document.fonts.status!=='loaded')document.fonts.ready.then(apply);
+}
+// Remember the exact spot so a reload of the same chapter comes back to it.
+let saveT; addEventListener('scroll',()=>{clearTimeout(saveT);saveT=setTimeout(saveScroll,200)},{passive:true});
+addEventListener('pagehide',saveScroll);
+function saveScroll(){try{localStorage.setItem('br.scroll',JSON.stringify({k:cur.key,y:Math.round(scrollY)}))}catch(e){}}
+function reloadY(key){try{const nav=performance.getEntriesByType('navigation')[0];if(!nav||nav.type!=='reload')return null;
+  const s=JSON.parse(localStorage.getItem('br.scroll')||'null');return s&&s.k===key?s.y:null}catch(e){return null}}
 function head(chLabel){const b=cat.books[cur.book];const multi=chapLabels(cur.book,cur.tr).length>1;return `<h1>${esc(b.name)}</h1><div class="sub">${multi?(isNaN(chLabel)?esc(chLabel):'Chapter '+esc(chLabel)):''}</div>`}
 async function colHtml(tr,chLabel,showName){
   let d; try{d=await getData(tr,cur.book)}catch(e){return `<div class="col"><p class="notice">Could not load ${esc(tr)} (${esc(e.message)}).</p></div>`}
@@ -106,7 +137,7 @@ function step(dir){
   const ord=cat.order; let bi=ord.indexOf(cur.book)+dir; if(bi<0||bi>=ord.length)return;
   cur.book=ord[bi]; cur.tr=resolveTr(cur.book,prefs.tr||prefs.defTr); cur.ch=dir>0?0:chapLabels(cur.book,cur.tr).length-1; render();
 }
-function go(book,chLabel,verse){cur.book=book;const tr=resolveTr(book,prefs.tr||prefs.defTr);const L=chapLabels(book,tr);let i=L.indexOf(String(chLabel));if(i<0&&chLabel!=null&&!isNaN(chLabel))i=Math.min(+chLabel-1,L.length-1);cur.ch=Math.max(0,i);closeAll();render({verse:verse?String(verse):null})}
+function go(book,chLabel,verse,restoreY){cur.book=book;const tr=resolveTr(book,prefs.tr||prefs.defTr);const L=chapLabels(book,tr);let i=L.indexOf(String(chLabel));if(i<0&&chLabel!=null&&!isNaN(chLabel))i=Math.min(+chLabel-1,L.length-1);cur.ch=Math.max(0,i);closeAll();render({verse:verse?String(verse):null,restoreY})}
 // ---------- panels ----------
 function openPanel(id){closeAll();$('#overlay').hidden=false;$(id).hidden=false;setTab({'#searchPanel':'search','#marksPanel':'marks','#settings':'settings','#about':'settings'}[id]||'read')}
 function closeAll(){$$('.panel').forEach(p=>p.hidden=true);$('#overlay').hidden=true;$('#verseMenu').hidden=true;const sh=$('#sheetShade');if(sh)sh.hidden=true;setTab('read')}
@@ -360,6 +391,7 @@ function bindPhone(){
 }
 // ---------- init ----------
 async function init(){
+  if('scrollRestoration' in history)history.scrollRestoration='manual'; // we place the scroll ourselves
   prefs=loadJ('br.prefs',{}); marks=Object.assign({hl:{},notes:{},bm:{}},loadJ('br.marks',{}));
   setTheme(prefs.theme||'light'); setFont(0);
   cat=await fetch('data/catalog.json').then(r=>r.json());
@@ -373,7 +405,7 @@ async function init(){
   if(!cat.books[pos.book])pos.book='JHN';
   bind();
   if(!prefs.welcomed){$('#welcome').hidden=false} 
-  go(pos.book,pos.ch,pos.v);
+  go(pos.book,pos.ch,pos.v,h?reloadY(pos.book+'/'+pos.ch):null);
 }
 function bind(){
   $('#btnPrev').onclick=()=>step(-1); $('#btnNext').onclick=()=>step(1);
