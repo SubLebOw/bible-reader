@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bible Reader</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%96%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="light">
+<header id="bar">
+  <button id="btnPrev" class="icon" title="Previous chapter (←)">‹</button>
+  <button id="btnRef" class="ref" title="Choose book &amp; chapter">Loading…</button>
+  <button id="btnNext" class="icon" title="Next chapter (→)">›</button>
+  <select id="selTr" title="Translation"></select>
+  <button id="btnCompare" class="icon" title="Compare / parallel view">⇆</button>
+  <select id="selTr2" title="Compare with" hidden></select>
+  <span class="grow"></span>
+  <button id="btnSearch" class="icon" title="Search">⌕</button>
+  <button id="btnJump" class="icon kbd" title="Jump (Ctrl/Cmd+K)">⌘K</button>
+  <button id="btnMarks" class="icon" title="Bookmarks, highlights &amp; notes">★</button>
+  <button id="btnTheme" class="icon" title="Cycle theme">◐</button>
+  <button id="btnSettings" class="icon" title="Settings">⚙</button>
+</header>
+<main id="main"><article id="reader"></article></main>
+<div id="verseMenu" class="pop" hidden></div>
+<div id="overlay" hidden></div>
+<section id="picker" class="panel" hidden>
+  <div class="tabs" id="pickTabs"></div>
+  <div class="crumbs" id="pickCrumbs"></div>
+  <div id="pickBody"></div>
+</section>
+<section id="palette" class="panel small" hidden>
+  <input id="palInput" placeholder="Jump to… e.g. jn 3:16, enoch 6, thomas 77" autocomplete="off" spellcheck="false">
+  <div id="palList"></div>
+</section>
+<section id="searchPanel" class="panel" hidden>
+  <div class="row"><input id="searchInput" placeholder="Search the current translation…" autocomplete="off"><select id="searchScope"><option value="tr">Current translation</option><option value="book">Current book</option></select></div>
+  <div id="searchStatus" class="muted"></div>
+  <div id="searchResults"></div>
+</section>
+<section id="marksPanel" class="panel" hidden><div class="tabs" id="marksTabs"></div><div id="marksBody"></div></section>
+<section id="settings" class="panel small" hidden>
+  <h2>Settings</h2>
+  <div class="set"><label>Theme</label><div class="seg" id="themeSeg"><button data-t="light">Light</button><button data-t="sepia">Sepia</button><button data-t="dark">Dark</button></div></div>
+  <div class="set"><label>Text size</label><div class="seg"><button id="fontDown">A−</button><button id="fontUp">A+</button></div></div>
+  <div class="set"><label>Default translation</label><select id="selDefault"></select></div>
+  <div class="set"><label>Legacy Standard Bible</label>
+    <div id="lsbState" class="muted"></div>
+    <div class="row"><button id="btnAddLsb" class="primary">Add LSB</button><label class="btn">Import file…<input type="file" id="lsbFile" accept=".xml,text/xml" hidden></label><button id="btnRemoveLsb">Remove</button></div>
+    <div class="progress" id="lsbProg" hidden><div></div><span></span></div>
+    <p class="fine">The LSB is © The Lockman Foundation. It is downloaded straight from the Beblia XML on GitHub into this browser only (IndexedDB) and is never part of this site.</p>
+  </div>
+  <div class="set"><label>Your data</label><div class="row"><button id="btnExport">Export notes &amp; highlights</button><label class="btn">Import…<input type="file" id="importMarks" accept=".json" hidden></label></div></div>
+  <p class="fine"><a href="#" id="aboutLink">About these texts &amp; licences</a></p>
+</section>
+<section id="about" class="panel" hidden></section>
+<section id="welcome" hidden>
+  <div class="card">
+    <h1>Welcome</h1>
+    <p>Choose the Bible you want to read. You can change this later in Settings.</p>
+    <div class="choices">
+      <button id="wWeb" class="choice"><b>Use WEB</b><span>World English Bible — built in, public domain, includes the deuterocanon.</span></button>
+      <button id="wLsb" class="choice"><b>Add LSB</b><span>Legacy Standard Bible — downloaded once into this browser (≈5 MB).</span></button>
+    </div>
+    <div class="progress" id="wProg" hidden><div></div><span></span></div>
+    <p id="wErr" class="err"></p>
+  </div>
+</section>
+<div id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
