@@ -1,6 +1,6 @@
 // Service worker: caches the app shell, and every chapter file you have read, for offline use.
 // Bump VERSION when shipping changes to the shell.
-const VERSION='br-v2-2026-10-19';
+const VERSION='br-v3-2026-10-19';
 const SHELL=['./','index.html','app.js','style.css','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','data/catalog.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION&&k!=='br-data'&&k!=='br-fonts').map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

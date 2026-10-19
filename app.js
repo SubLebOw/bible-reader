@@ -3,7 +3,7 @@ const LSB_URL='https://raw.githubusercontent.com/Beblia/Holy-Bible-XML-Format/ma
 const LSB_SIZE=5168207;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const PROSE=new Set(['walker','james','mattison','robinson','horner','harden','morwyng','pd','user']);
+const PROSE=new Set(['walker','james','mattison','robinson','horner','harden','morwyng','cooper','gh','hogan','pd','user']);
 let cat, prefs, marks, cur={book:'JHN',ch:0,tr:null,tr2:null,compare:false};
 const cache=new Map();
 // ---------- storage ----------

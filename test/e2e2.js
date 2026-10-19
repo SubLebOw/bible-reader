@@ -10,7 +10,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await p.goto(BASE); await p.waitForSelector('#welcome:not([hidden])'); await p.click('#wWeb');
   const checks = [['SIN2', '1', /Yuhanes/, 'Horner'], ['DIDA', '1', /Clement/, 'Harden'], ['JOSI', '1', /Gorion/, 'HEBREW Josippon'], ['COV2R', '2', /Cephas/, 'Epistle of the Apostles'],
     ['CLEMR', '1', /Mount of Olives/, 'Ethiopic'], ['TAC', '15.44', /Christus/, 'Church'], ['PLIN', '10.96', /Christians/, 'Melmoth'], ['JOSA', '18.3.3', /wise man/, 'Whiston'],
-    ['SUET', 'Claudius 25', /Chrestus/, 'Rolfe'], ['MARA', '1', /wise king/i, 'Cureton'], ['LUC', '11–14', /crucified/, 'Fowler'], ['THAL', '1', /Thallus/, 'Salmond']];
+    ['SUET', 'Claudius 25', /Chrestus/, 'Rolfe'], ['MARA', '1', /wise king/i, 'Cureton'], ['LUC', '11–14', /crucified/, 'Fowler'], ['THAL', '1', /Thallus/, 'Salmond'], ['TDOM', 'I.1', /Holy Ghost/, 'Cooper'], ['POX1224', 'Fr. 2 verso ii (p. 175)', /physician/, 'Grenfell'], ['LINF', '1', /Christmas night/, 'Hogan']];
   for (const [b, c, re, cr] of checks) {
     await p.goto(BASE + '#/' + b + '/' + encodeURIComponent(c)); await p.reload(); await p.waitForSelector('#reader .v');
     const t = await p.textContent('#reader'); ok(re.test(t) && (await p.textContent('.credit')).includes(cr), `${b} ${c} renders, credit mentions ${cr}`);

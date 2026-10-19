@@ -21,6 +21,9 @@ Everything hosted in this repository is public domain or openly licensed:
 | Horner | G. Horner, *The Statutes of the Apostles* (1904) — Sinodos: Te’ezaz, cleaned OCR | Public domain | archive.org statutesapostle00unkngoog |
 | Harden | J. M. Harden, *The Ethiopic Didascalia* (1920), cleaned OCR | Public domain | archive.org cu31924096083336 |
 | Morwyng | Peter Morwyng (1558), Hebrew Josippon (not the Ethiopic Zena Ayhud) | CC0 (EEBO-TCP text) | github.com/textcreationpartnership/A04666 |
+| Cooper | J. Cooper & A. J. Maclean, *The Testament of Our Lord* (1902), Syriac Testamentum Domini — related to Ethiopic Covenant 1 | Public domain | archive.org cu31924029296170 |
+| G&H | B. P. Grenfell & A. S. Hunt, *The Oxyrhynchus Papyri* X (1914), P.Oxy 1224 | Public domain | archive.org oxyrhynchuspapyr10gren |
+| Hogan | E. Hogan (1895) Irish Infancy stories (Leabhar Breac), as reprinted in M. R. James, *Latin Infancy Gospels* (1927) — related to the Latin Arundel/Hereford text | Public domain | archive.org latininfancygosp0000unse |
 | PD | Supporting texts: Tacitus (Church & Brodribb), Pliny (Melmoth/Bosanquet), Josephus (Whiston), Suetonius (Rolfe 1914), Mara bar Serapion (ANF 8), Lucian (Fowler 1905), Julius Africanus on Thallus (ANF 6) | Public domain | Wikisource, Project Gutenberg, LacusCurtius, CCEL |
 
 Each book ends with its translator and source.
